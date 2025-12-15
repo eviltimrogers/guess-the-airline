@@ -6,9 +6,25 @@ interface Airline {
   id: string;
 }
 
-const response = await fetch('https://iata-code-decoder-api.timrogers.co.uk/airlines');
-const data = await response.json();
-const airlines: Airline[] = data.data;
+let airlines: Airline[] = [];
+
+try {
+  const response = await fetch('https://iata-code-decoder-api.timrogers.co.uk/airlines');
+  
+  if (!response.ok) {
+    throw new Error(`Failed to fetch airlines: ${response.status} ${response.statusText}`);
+  }
+  
+  const data = await response.json();
+  airlines = data.data;
+  
+  if (!Array.isArray(airlines) || airlines.length === 0) {
+    throw new Error('No airline data available');
+  }
+} catch (error) {
+  console.error('Error fetching airlines:', error);
+  throw error; // This will cause the build to fail, which is appropriate
+}
 ---
 
 <!DOCTYPE html>
@@ -185,12 +201,22 @@ const airlines: Airline[] = data.data;
     let currentCorrectAnswer = null;
     let answered = false;
 
+    // Fisher-Yates shuffle algorithm for proper randomization
+    function shuffle(array) {
+      const shuffled = [...array];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    }
+
     function getRandomAirlines(count, exclude = null) {
       const available = exclude 
         ? airlines.filter(a => a.id !== exclude.id)
         : airlines;
       
-      const shuffled = [...available].sort(() => Math.random() - 0.5);
+      const shuffled = shuffle(available);
       return shuffled.slice(0, count);
     }
 
@@ -211,8 +237,7 @@ const airlines: Airline[] = data.data;
       const incorrectOptions = getRandomAirlines(3, currentCorrectAnswer);
       
       // Combine and shuffle all options
-      const allOptions = [currentCorrectAnswer, ...incorrectOptions]
-        .sort(() => Math.random() - 0.5);
+      const allOptions = shuffle([currentCorrectAnswer, ...incorrectOptions]);
 
       // Display options
       const optionsContainer = document.getElementById('options-container');
