@@ -247,6 +247,7 @@ try {
         const button = document.createElement('button');
         button.className = 'option-button';
         button.textContent = airline.name;
+        button.dataset.airlineId = airline.id;
         button.onclick = () => handleAnswer(airline, button);
         optionsContainer.appendChild(button);
       });
@@ -274,7 +275,7 @@ try {
         button.classList.add('incorrect');
         // Highlight the correct answer
         buttons.forEach(btn => {
-          if (btn.textContent === currentCorrectAnswer.name) {
+          if (btn.dataset.airlineId === currentCorrectAnswer.id) {
             btn.classList.add('correct');
           }
         });
