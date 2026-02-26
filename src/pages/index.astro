@@ -300,6 +300,31 @@ try {
       box-shadow: 0 0 20px rgba(255, 255, 0, 0.3);
     }
 
+    .mute-button {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: transparent;
+      border: 2px solid #3a3a8c;
+      color: #0ff;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.55em;
+      padding: 6px 10px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      z-index: 2;
+    }
+
+    .mute-button:hover {
+      border-color: #0ff;
+      box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+    }
+
+    .mute-button.muted {
+      color: #888;
+      border-color: #555;
+    }
+
     .insert-coin {
       text-align: center;
       margin-top: 20px;
@@ -341,6 +366,7 @@ try {
 </head>
 <body>
   <div class="container">
+    <button class="mute-button" id="mute-button" aria-label="Mute sounds">&#x1F50A;</button>
     <h1>&#x2708; GUESS THE AIRLINE</h1>
     <div class="pixel-divider"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
     <div class="hi-score">HI-SCORE: <span id="hi-score">0</span></div>
@@ -367,6 +393,77 @@ try {
     let answered = false;
     let hiScore = parseInt(localStorage.getItem('airline-hi-score') || '0', 10);
     let streak = 0;
+    let muted = localStorage.getItem('airline-muted') === 'true';
+
+    // Audio context (created lazily on first interaction to comply with autoplay policy)
+    let audioCtx = null;
+
+    function getAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      return audioCtx;
+    }
+
+    function playCorrectSound() {
+      if (muted) return;
+      const ctx = getAudioContext();
+      // Rising fanfare: four ascending notes
+      const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+      const durations = [0.12, 0.12, 0.12, 0.22];
+      let time = ctx.currentTime;
+      notes.forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(freq, time);
+        gain.gain.setValueAtTime(0.18, time);
+        gain.gain.exponentialRampToValueAtTime(0.001, time + durations[i]);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(time);
+        osc.stop(time + durations[i]);
+        time += durations[i] * 0.85;
+      });
+    }
+
+    function playWrongSound() {
+      if (muted) return;
+      const ctx = getAudioContext();
+      // Descending buzzer: low falling tones
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(300, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.45);
+      gain.gain.setValueAtTime(0.2, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.45);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.45);
+    }
+
+    function updateMuteButton() {
+      const btn = document.getElementById('mute-button');
+      if (muted) {
+        btn.textContent = '\uD83D\uDD07'; // 🔇
+        btn.classList.add('muted');
+        btn.setAttribute('aria-label', 'Unmute sounds');
+      } else {
+        btn.textContent = '\uD83D\uDD0A'; // 🔊
+        btn.classList.remove('muted');
+        btn.setAttribute('aria-label', 'Mute sounds');
+      }
+    }
+
+    document.getElementById('mute-button').onclick = () => {
+      muted = !muted;
+      localStorage.setItem('airline-muted', muted.toString());
+      updateMuteButton();
+    };
+
+    updateMuteButton();
 
     document.getElementById('hi-score').textContent = hiScore;
 
@@ -434,6 +531,7 @@ try {
         const streakText = streak > 1 ? ` ${streak}x COMBO!` : '';
         document.getElementById('feedback').textContent = `CORRECT!${streakText}`;
         document.getElementById('feedback').className = 'feedback correct';
+        playCorrectSound();
       } else {
         streak = 0;
         button.classList.add('incorrect');
@@ -444,6 +542,7 @@ try {
         });
         document.getElementById('feedback').textContent = `WRONG! IT WAS ${currentCorrectAnswer.name.toUpperCase()}`;
         document.getElementById('feedback').className = 'feedback incorrect';
+        playWrongSound();
       }
 
       // Update score and hi-score
