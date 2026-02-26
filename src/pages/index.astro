@@ -33,6 +33,9 @@ try {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Guess the Airline</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   <style>
     * {
       margin: 0;
@@ -41,158 +44,320 @@ try {
     }
 
     body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: 'Press Start 2P', monospace;
+      background: #0a0a2e;
       min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
       padding: 20px;
+      color: #fff;
+      overflow: hidden;
+    }
+
+    /* Starfield background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(1px 1px at 10% 20%, #fff, transparent),
+        radial-gradient(1px 1px at 30% 65%, #fff, transparent),
+        radial-gradient(1px 1px at 50% 10%, #fff, transparent),
+        radial-gradient(1.5px 1.5px at 70% 40%, #0ff, transparent),
+        radial-gradient(1px 1px at 85% 75%, #fff, transparent),
+        radial-gradient(1px 1px at 15% 80%, #fff, transparent),
+        radial-gradient(1.5px 1.5px at 60% 90%, #f0f, transparent),
+        radial-gradient(1px 1px at 90% 15%, #fff, transparent),
+        radial-gradient(1px 1px at 40% 50%, #fff, transparent),
+        radial-gradient(1px 1px at 25% 35%, #fff, transparent);
+      z-index: 0;
+      animation: twinkle 4s ease-in-out infinite alternate;
+    }
+
+    @keyframes twinkle {
+      0% { opacity: 0.6; }
+      100% { opacity: 1; }
+    }
+
+    /* CRT scanline overlay */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.15) 0px,
+        rgba(0, 0, 0, 0.15) 1px,
+        transparent 1px,
+        transparent 3px
+      );
+      pointer-events: none;
+      z-index: 100;
     }
 
     .container {
-      max-width: 600px;
+      max-width: 640px;
       width: 100%;
-      background: white;
-      border-radius: 20px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-      padding: 40px;
+      background: #111144;
+      border: 4px solid #0ff;
+      box-shadow:
+        0 0 15px rgba(0, 255, 255, 0.4),
+        0 0 40px rgba(0, 255, 255, 0.15),
+        inset 0 0 30px rgba(0, 255, 255, 0.05);
+      padding: 30px 25px;
+      position: relative;
+      z-index: 1;
+      image-rendering: pixelated;
     }
 
     h1 {
       text-align: center;
-      color: #333;
-      margin-bottom: 10px;
-      font-size: 2em;
+      color: #ff0;
+      margin-bottom: 6px;
+      font-size: 1.1em;
+      text-shadow:
+        0 0 10px #ff0,
+        0 0 30px rgba(255, 255, 0, 0.4);
+      line-height: 1.6;
+      animation: glow-title 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes glow-title {
+      0% { text-shadow: 0 0 10px #ff0, 0 0 30px rgba(255, 255, 0, 0.4); }
+      100% { text-shadow: 0 0 15px #ff0, 0 0 50px rgba(255, 255, 0, 0.6); }
     }
 
     .score {
       text-align: center;
-      color: #666;
-      font-size: 1.2em;
-      margin-bottom: 30px;
+      color: #0ff;
+      font-size: 0.7em;
+      margin-bottom: 20px;
+      text-shadow: 0 0 8px rgba(0, 255, 255, 0.6);
+      letter-spacing: 2px;
+    }
+
+    .hi-score {
+      text-align: center;
+      color: #f0f;
+      font-size: 0.55em;
+      margin-bottom: 20px;
+      text-shadow: 0 0 8px rgba(255, 0, 255, 0.5);
     }
 
     .question-section {
-      margin-bottom: 30px;
+      margin-bottom: 10px;
     }
 
     .iata-code {
       text-align: center;
-      font-size: 4em;
+      font-size: 3em;
       font-weight: bold;
-      color: #667eea;
-      margin: 30px 0;
-      letter-spacing: 0.1em;
-      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+      color: #0f0;
+      margin: 20px 0;
+      letter-spacing: 0.2em;
+      text-shadow:
+        0 0 10px #0f0,
+        0 0 30px rgba(0, 255, 0, 0.5),
+        0 0 60px rgba(0, 255, 0, 0.2);
+      animation: pulse-code 1.5s ease-in-out infinite alternate;
+    }
+
+    @keyframes pulse-code {
+      0% { text-shadow: 0 0 10px #0f0, 0 0 30px rgba(0, 255, 0, 0.5); }
+      100% { text-shadow: 0 0 20px #0f0, 0 0 50px rgba(0, 255, 0, 0.7), 0 0 80px rgba(0, 255, 0, 0.3); }
     }
 
     .prompt {
       text-align: center;
-      font-size: 1.2em;
-      color: #555;
-      margin-bottom: 30px;
+      font-size: 0.6em;
+      color: #aaa;
+      margin-bottom: 20px;
+      line-height: 1.8;
+      text-transform: uppercase;
+      letter-spacing: 1px;
     }
 
     .options {
       display: flex;
       flex-direction: column;
-      gap: 15px;
+      gap: 10px;
     }
 
     .option-button {
-      background: white;
-      border: 2px solid #ddd;
-      border-radius: 12px;
-      padding: 20px;
-      font-size: 1.1em;
+      background: #1a1a4e;
+      border: 2px solid #3a3a8c;
+      padding: 14px 16px;
+      font-size: 0.55em;
+      font-family: 'Press Start 2P', monospace;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: all 0.15s ease;
       text-align: left;
+      color: #ccc;
+      line-height: 1.6;
+      position: relative;
+    }
+
+    .option-button::before {
+      content: '▸ ';
+      color: #0ff;
+      opacity: 0;
+      transition: opacity 0.15s ease;
     }
 
     .option-button:hover:not(:disabled) {
-      border-color: #667eea;
-      background: #f8f9ff;
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+      border-color: #0ff;
+      background: #222266;
+      color: #fff;
+      box-shadow: 0 0 12px rgba(0, 255, 255, 0.3);
+      transform: translateX(4px);
+    }
+
+    .option-button:hover:not(:disabled)::before {
+      opacity: 1;
     }
 
     .option-button:disabled {
       cursor: not-allowed;
-      opacity: 0.6;
     }
 
     .option-button.correct {
-      background: #10b981;
-      border-color: #10b981;
-      color: white;
+      background: #0a3a0a;
+      border-color: #0f0;
+      color: #0f0;
+      box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+    }
+
+    .option-button.correct::before {
+      content: '★ ';
+      color: #0f0;
+      opacity: 1;
     }
 
     .option-button.incorrect {
-      background: #ef4444;
-      border-color: #ef4444;
-      color: white;
+      background: #3a0a0a;
+      border-color: #f33;
+      color: #f33;
+      box-shadow: 0 0 15px rgba(255, 50, 50, 0.3);
+    }
+
+    .option-button.incorrect::before {
+      content: '✗ ';
+      color: #f33;
+      opacity: 1;
     }
 
     .feedback {
       text-align: center;
-      margin-top: 20px;
-      font-size: 1.3em;
+      margin-top: 18px;
+      font-size: 0.7em;
       font-weight: bold;
-      min-height: 30px;
+      min-height: 2.4em;
+      line-height: 1.6;
+      visibility: hidden;
+    }
+
+    .feedback.correct,
+    .feedback.incorrect {
+      visibility: visible;
     }
 
     .feedback.correct {
-      color: #10b981;
+      color: #0f0;
+      text-shadow: 0 0 10px rgba(0, 255, 0, 0.6);
+      animation: flash-correct 0.4s ease 3;
+    }
+
+    @keyframes flash-correct {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
     }
 
     .feedback.incorrect {
-      color: #ef4444;
+      color: #f33;
+      text-shadow: 0 0 10px rgba(255, 50, 50, 0.6);
     }
 
     .next-button {
       display: block;
-      margin: 20px auto 0;
-      padding: 15px 40px;
-      font-size: 1.1em;
-      background: #667eea;
-      color: white;
-      border: none;
-      border-radius: 10px;
+      visibility: hidden;
+      margin: 18px auto 0;
+      padding: 14px 30px;
+      font-size: 0.65em;
+      font-family: 'Press Start 2P', monospace;
+      background: transparent;
+      color: #ff0;
+      border: 2px solid #ff0;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: all 0.15s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      text-shadow: 0 0 8px rgba(255, 255, 0, 0.5);
     }
 
     .next-button:hover {
-      background: #5568d3;
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+      background: rgba(255, 255, 0, 0.1);
+      box-shadow: 0 0 20px rgba(255, 255, 0, 0.3);
+    }
+
+    .insert-coin {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 0.5em;
+      color: #888;
+      animation: blink 1.2s step-end infinite;
+      letter-spacing: 2px;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
     }
 
     .loading {
       text-align: center;
-      font-size: 1.2em;
-      color: #666;
+      font-size: 0.7em;
+      color: #0ff;
+    }
+
+    /* Pixel-art divider */
+    .pixel-divider {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin: 12px 0;
+    }
+    .pixel-divider span {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      background: #0ff;
+      opacity: 0.5;
+    }
+    .pixel-divider span:nth-child(odd) {
+      background: #f0f;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>✈️ Guess the Airline</h1>
+    <h1>&#x2708; GUESS THE AIRLINE</h1>
+    <div class="pixel-divider"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+    <div class="hi-score">HI-SCORE: <span id="hi-score">0</span></div>
     <div class="score">
-      Score: <span id="correct-count">0</span> / <span id="total-count">0</span>
+      SCORE: <span id="correct-count">0</span> / <span id="total-count">0</span>
     </div>
 
     <div id="game-container">
       <div class="question-section">
-        <div class="prompt">Which airline uses this IATA code?</div>
+        <div class="prompt">Identify the airline from the IATA code</div>
         <div class="iata-code" id="iata-code">--</div>
         <div class="options" id="options-container"></div>
         <div class="feedback" id="feedback"></div>
-        <button class="next-button" id="next-button" style="display: none;">Next Question →</button>
+        <button class="next-button" id="next-button">NEXT &gt;&gt;</button>
       </div>
     </div>
+    <div class="insert-coin" id="insert-coin">PRESS START</div>
   </div>
 
   <script define:vars={{ airlines }}>
@@ -200,6 +365,10 @@ try {
     let totalCount = 0;
     let currentCorrectAnswer = null;
     let answered = false;
+    let hiScore = parseInt(localStorage.getItem('airline-hi-score') || '0', 10);
+    let streak = 0;
+
+    document.getElementById('hi-score').textContent = hiScore;
 
     // Fisher-Yates shuffle algorithm for proper randomization
     function shuffle(array) {
@@ -221,25 +390,19 @@ try {
     }
 
     function loadQuestion() {
-      // Reset state
       answered = false;
       document.getElementById('feedback').textContent = '';
       document.getElementById('feedback').className = 'feedback';
-      document.getElementById('next-button').style.display = 'none';
+      document.getElementById('next-button').style.visibility = 'hidden';
+      document.getElementById('insert-coin').style.display = 'none';
 
-      // Select correct answer
       currentCorrectAnswer = airlines[Math.floor(Math.random() * airlines.length)];
-
-      // Display IATA code
+      window.__currentCorrectAnswer = currentCorrectAnswer;
       document.getElementById('iata-code').textContent = currentCorrectAnswer.iataCode;
 
-      // Get 3 random incorrect options
       const incorrectOptions = getRandomAirlines(3, currentCorrectAnswer);
-      
-      // Combine and shuffle all options
       const allOptions = shuffle([currentCorrectAnswer, ...incorrectOptions]);
 
-      // Display options
       const optionsContainer = document.getElementById('options-container');
       optionsContainer.innerHTML = '';
 
@@ -259,36 +422,41 @@ try {
       answered = true;
       totalCount++;
 
-      // Disable all buttons
       const buttons = document.querySelectorAll('.option-button');
       buttons.forEach(btn => btn.disabled = true);
 
-      // Check if answer is correct
       const isCorrect = selectedAirline.id === currentCorrectAnswer.id;
 
       if (isCorrect) {
         correctCount++;
+        streak++;
         button.classList.add('correct');
-        document.getElementById('feedback').textContent = '✓ Correct!';
+        const streakText = streak > 1 ? ` ${streak}x COMBO!` : '';
+        document.getElementById('feedback').textContent = `CORRECT!${streakText}`;
         document.getElementById('feedback').className = 'feedback correct';
       } else {
+        streak = 0;
         button.classList.add('incorrect');
-        // Highlight the correct answer
         buttons.forEach(btn => {
           if (btn.dataset.airlineId === currentCorrectAnswer.id) {
             btn.classList.add('correct');
           }
         });
-        document.getElementById('feedback').textContent = `✗ Wrong! It was ${currentCorrectAnswer.name}`;
+        document.getElementById('feedback').textContent = `WRONG! IT WAS ${currentCorrectAnswer.name.toUpperCase()}`;
         document.getElementById('feedback').className = 'feedback incorrect';
       }
 
-      // Update score
+      // Update score and hi-score
       document.getElementById('correct-count').textContent = correctCount;
       document.getElementById('total-count').textContent = totalCount;
 
-      // Show next button
-      document.getElementById('next-button').style.display = 'block';
+      if (correctCount > hiScore) {
+        hiScore = correctCount;
+        localStorage.setItem('airline-hi-score', hiScore.toString());
+        document.getElementById('hi-score').textContent = hiScore;
+      }
+
+      document.getElementById('next-button').style.visibility = 'visible';
     }
 
     // Initialize game
