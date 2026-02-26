@@ -116,4 +116,35 @@ test.describe('Guess the Airline', () => {
 
     await expect(page.locator('#hi-score')).toHaveText('1');
   });
+
+  test('displays mute button', async ({ page }) => {
+    await expect(page.locator('#mute-button')).toBeVisible();
+  });
+
+  test('mute button toggles muted state and persists to localStorage', async ({ page }) => {
+    await page.evaluate(() => localStorage.removeItem('airline-muted'));
+    await page.reload();
+    await page.waitForSelector('.option-button');
+
+    const muteBtn = page.locator('#mute-button');
+    await expect(muteBtn).not.toHaveClass(/muted/);
+
+    await muteBtn.click();
+    await expect(muteBtn).toHaveClass(/muted/);
+    const stored = await page.evaluate(() => localStorage.getItem('airline-muted'));
+    expect(stored).toBe('true');
+
+    await muteBtn.click();
+    await expect(muteBtn).not.toHaveClass(/muted/);
+    const stored2 = await page.evaluate(() => localStorage.getItem('airline-muted'));
+    expect(stored2).toBe('false');
+  });
+
+  test('mute preference is restored from localStorage on reload', async ({ page }) => {
+    await page.evaluate(() => localStorage.setItem('airline-muted', 'true'));
+    await page.reload();
+    await page.waitForSelector('.option-button');
+
+    await expect(page.locator('#mute-button')).toHaveClass(/muted/);
+  });
 });
