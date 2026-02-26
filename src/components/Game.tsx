@@ -41,6 +41,7 @@ function createQuestion(airlines: Airline[]): Question {
 
 declare global {
   interface Window {
+    // Used by Playwright e2e tests to identify the current correct answer.
     __currentCorrectAnswer?: Airline;
   }
 }
@@ -160,9 +161,6 @@ export default function Game({ airlines }: GameProps) {
             NEXT &gt;&gt;
           </button>
         </div>
-      </div>
-      <div className="insert-coin" id="insert-coin" style={{ display: 'none' }}>
-        PRESS START
       </div>
     </>
   );
