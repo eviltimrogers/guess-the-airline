@@ -6,7 +6,8 @@
     "dev": "astro dev",
     "start": "astro dev",
     "build": "astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "test:e2e": "playwright test"
   },
   "keywords": [],
   "author": "",
@@ -14,5 +15,8 @@
   "description": "A fun game where users guess airlines from their IATA codes",
   "dependencies": {
     "astro": "^5.16.5"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.2"
   }
 }
