@@ -21,3 +21,7 @@ pnpm-debug.log*
 
 # jetbrains
 .idea/
+
+# test artifacts
+playwright-report/
+test-results/

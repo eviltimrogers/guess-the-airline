@@ -25,6 +25,8 @@ try {
   console.error('Error fetching airlines:', error);
   throw error; // This will cause the build to fail, which is appropriate
 }
+
+import Game from '../components/Game';
 ---
 
 <!DOCTYPE html>
@@ -341,127 +343,7 @@ try {
 </head>
 <body>
   <div class="container">
-    <h1>&#x2708; GUESS THE AIRLINE</h1>
-    <div class="pixel-divider"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
-    <div class="hi-score">HI-SCORE: <span id="hi-score">0</span></div>
-    <div class="score">
-      SCORE: <span id="correct-count">0</span> / <span id="total-count">0</span>
-    </div>
-
-    <div id="game-container">
-      <div class="question-section">
-        <div class="prompt">Identify the airline from the IATA code</div>
-        <div class="iata-code" id="iata-code">--</div>
-        <div class="options" id="options-container"></div>
-        <div class="feedback" id="feedback"></div>
-        <button class="next-button" id="next-button">NEXT &gt;&gt;</button>
-      </div>
-    </div>
-    <div class="insert-coin" id="insert-coin">PRESS START</div>
+    <Game client:load airlines={airlines} />
   </div>
-
-  <script define:vars={{ airlines }}>
-    let correctCount = 0;
-    let totalCount = 0;
-    let currentCorrectAnswer = null;
-    let answered = false;
-    let hiScore = parseInt(localStorage.getItem('airline-hi-score') || '0', 10);
-    let streak = 0;
-
-    document.getElementById('hi-score').textContent = hiScore;
-
-    // Fisher-Yates shuffle algorithm for proper randomization
-    function shuffle(array) {
-      const shuffled = [...array];
-      for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-      }
-      return shuffled;
-    }
-
-    function getRandomAirlines(count, exclude = null) {
-      const available = exclude 
-        ? airlines.filter(a => a.id !== exclude.id)
-        : airlines;
-      
-      const shuffled = shuffle(available);
-      return shuffled.slice(0, count);
-    }
-
-    function loadQuestion() {
-      answered = false;
-      document.getElementById('feedback').textContent = '';
-      document.getElementById('feedback').className = 'feedback';
-      document.getElementById('next-button').style.visibility = 'hidden';
-      document.getElementById('insert-coin').style.display = 'none';
-
-      currentCorrectAnswer = airlines[Math.floor(Math.random() * airlines.length)];
-      window.__currentCorrectAnswer = currentCorrectAnswer;
-      document.getElementById('iata-code').textContent = currentCorrectAnswer.iataCode;
-
-      const incorrectOptions = getRandomAirlines(3, currentCorrectAnswer);
-      const allOptions = shuffle([currentCorrectAnswer, ...incorrectOptions]);
-
-      const optionsContainer = document.getElementById('options-container');
-      optionsContainer.innerHTML = '';
-
-      allOptions.forEach(airline => {
-        const button = document.createElement('button');
-        button.className = 'option-button';
-        button.textContent = airline.name;
-        button.dataset.airlineId = airline.id;
-        button.onclick = () => handleAnswer(airline, button);
-        optionsContainer.appendChild(button);
-      });
-    }
-
-    function handleAnswer(selectedAirline, button) {
-      if (answered) return;
-
-      answered = true;
-      totalCount++;
-
-      const buttons = document.querySelectorAll('.option-button');
-      buttons.forEach(btn => btn.disabled = true);
-
-      const isCorrect = selectedAirline.id === currentCorrectAnswer.id;
-
-      if (isCorrect) {
-        correctCount++;
-        streak++;
-        button.classList.add('correct');
-        const streakText = streak > 1 ? ` ${streak}x COMBO!` : '';
-        document.getElementById('feedback').textContent = `CORRECT!${streakText}`;
-        document.getElementById('feedback').className = 'feedback correct';
-      } else {
-        streak = 0;
-        button.classList.add('incorrect');
-        buttons.forEach(btn => {
-          if (btn.dataset.airlineId === currentCorrectAnswer.id) {
-            btn.classList.add('correct');
-          }
-        });
-        document.getElementById('feedback').textContent = `WRONG! IT WAS ${currentCorrectAnswer.name.toUpperCase()}`;
-        document.getElementById('feedback').className = 'feedback incorrect';
-      }
-
-      // Update score and hi-score
-      document.getElementById('correct-count').textContent = correctCount;
-      document.getElementById('total-count').textContent = totalCount;
-
-      if (correctCount > hiScore) {
-        hiScore = correctCount;
-        localStorage.setItem('airline-hi-score', hiScore.toString());
-        document.getElementById('hi-score').textContent = hiScore;
-      }
-
-      document.getElementById('next-button').style.visibility = 'visible';
-    }
-
-    // Initialize game
-    document.getElementById('next-button').onclick = loadQuestion;
-    loadQuestion();
-  </script>
 </body>
 </html>
