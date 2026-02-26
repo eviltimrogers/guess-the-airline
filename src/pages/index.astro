@@ -337,10 +337,149 @@ try {
     .pixel-divider span:nth-child(odd) {
       background: #f0f;
     }
+
+    /* Theme toggle */
+    .theme-toggle {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: transparent;
+      border: 2px solid #0ff;
+      color: #0ff;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.55em;
+      padding: 6px 10px;
+      cursor: pointer;
+      z-index: 10;
+      transition: all 0.15s ease;
+    }
+
+    .theme-toggle:hover {
+      background: rgba(0, 255, 255, 0.1);
+      box-shadow: 0 0 12px rgba(0, 255, 255, 0.3);
+    }
+
+    /* Light mode styles */
+    body.light-mode {
+      background: #e8e8f0;
+      color: #222;
+    }
+
+    body.light-mode::before {
+      display: none;
+    }
+
+    body.light-mode::after {
+      display: none;
+    }
+
+    body.light-mode .container {
+      background: #fff;
+      border-color: #4466cc;
+      box-shadow:
+        0 4px 20px rgba(0, 0, 0, 0.1),
+        0 0 10px rgba(68, 102, 204, 0.2);
+    }
+
+    body.light-mode h1 {
+      color: #cc8800;
+      text-shadow: none;
+      animation: none;
+    }
+
+    body.light-mode .score {
+      color: #4466cc;
+      text-shadow: none;
+    }
+
+    body.light-mode .hi-score {
+      color: #9944cc;
+      text-shadow: none;
+    }
+
+    body.light-mode .iata-code {
+      color: #228822;
+      text-shadow: none;
+      animation: none;
+    }
+
+    body.light-mode .prompt {
+      color: #666;
+    }
+
+    body.light-mode .option-button {
+      background: #f4f4fa;
+      border-color: #bbb;
+      color: #333;
+    }
+
+    body.light-mode .option-button:hover:not(:disabled) {
+      border-color: #4466cc;
+      background: #eef;
+      color: #222;
+      box-shadow: 0 2px 8px rgba(68, 102, 204, 0.2);
+    }
+
+    body.light-mode .option-button.correct {
+      background: #e6f9e6;
+      border-color: #228822;
+      color: #228822;
+    }
+
+    body.light-mode .option-button.incorrect {
+      background: #fce6e6;
+      border-color: #cc2222;
+      color: #cc2222;
+    }
+
+    body.light-mode .feedback.correct {
+      color: #228822;
+      text-shadow: none;
+      animation: none;
+    }
+
+    body.light-mode .feedback.incorrect {
+      color: #cc2222;
+      text-shadow: none;
+    }
+
+    body.light-mode .next-button {
+      color: #cc8800;
+      border-color: #cc8800;
+      text-shadow: none;
+    }
+
+    body.light-mode .next-button:hover {
+      background: rgba(204, 136, 0, 0.1);
+      box-shadow: 0 2px 8px rgba(204, 136, 0, 0.2);
+    }
+
+    body.light-mode .theme-toggle {
+      border-color: #4466cc;
+      color: #4466cc;
+    }
+
+    body.light-mode .theme-toggle:hover {
+      background: rgba(68, 102, 204, 0.1);
+      box-shadow: 0 2px 8px rgba(68, 102, 204, 0.2);
+    }
+
+    body.light-mode .pixel-divider span {
+      background: #4466cc;
+    }
+
+    body.light-mode .pixel-divider span:nth-child(odd) {
+      background: #9944cc;
+    }
+
+    body.light-mode .insert-coin {
+      color: #999;
+    }
   </style>
 </head>
 <body>
   <div class="container">
+    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle light/dark mode">☀️</button>
     <h1>&#x2708; GUESS THE AIRLINE</h1>
     <div class="pixel-divider"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
     <div class="hi-score">HI-SCORE: <span id="hi-score">0</span></div>
@@ -458,6 +597,21 @@ try {
 
       document.getElementById('next-button').style.visibility = 'visible';
     }
+
+    // Theme toggle
+    const themeToggle = document.getElementById('theme-toggle');
+    const savedTheme = localStorage.getItem('airline-theme');
+    if (savedTheme === 'light') {
+      document.body.classList.add('light-mode');
+      themeToggle.textContent = '🌙';
+    }
+
+    themeToggle.addEventListener('click', () => {
+      document.body.classList.toggle('light-mode');
+      const isLight = document.body.classList.contains('light-mode');
+      themeToggle.textContent = isLight ? '🌙' : '☀️';
+      localStorage.setItem('airline-theme', isLight ? 'light' : 'dark');
+    });
 
     // Initialize game
     document.getElementById('next-button').onclick = loadQuestion;
