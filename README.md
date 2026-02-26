@@ -64,6 +64,7 @@ The game fetches airline data from the [IATA Code Decoder API](https://iata-code
 ## 📦 Tech Stack
 
 - **[Astro](https://astro.build/)** - Fast, modern static site generator
+- **[React](https://react.dev/)** - Interactive game components
 - **TypeScript** - Type-safe JavaScript
 - **IATA Code Decoder API** - Real airline data with CORS support
 
