@@ -1,10 +1,6 @@
 ---
+import type { Airline } from '../utils/game';
 // Fetch airlines data at build time
-interface Airline {
-  iataCode: string;
-  name: string;
-  id: string;
-}
 
 let airlines: Airline[] = [];
 
@@ -500,49 +496,40 @@ try {
   </div>
 
   <script define:vars={{ airlines }}>
+    // Expose server-rendered airlines data to the module script below
+    window.__airlines = airlines;
+  </script>
+
+  <script>
+    import { shuffle, getRandomAirlines, buildFeedbackText } from '../utils/game';
+    import { getThemeToggleIcon, toggleTheme, getStoredTheme } from '../utils/theme';
+
+    const airlines = (window as any).__airlines;
+
     let correctCount = 0;
     let totalCount = 0;
-    let currentCorrectAnswer = null;
+    let currentCorrectAnswer: { id: string; iataCode: string; name: string } | null = null;
     let answered = false;
     let hiScore = parseInt(localStorage.getItem('airline-hi-score') || '0', 10);
     let streak = 0;
 
-    document.getElementById('hi-score').textContent = hiScore;
-
-    // Fisher-Yates shuffle algorithm for proper randomization
-    function shuffle(array) {
-      const shuffled = [...array];
-      for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-      }
-      return shuffled;
-    }
-
-    function getRandomAirlines(count, exclude = null) {
-      const available = exclude 
-        ? airlines.filter(a => a.id !== exclude.id)
-        : airlines;
-      
-      const shuffled = shuffle(available);
-      return shuffled.slice(0, count);
-    }
+    (document.getElementById('hi-score') as HTMLElement).textContent = String(hiScore);
 
     function loadQuestion() {
       answered = false;
-      document.getElementById('feedback').textContent = '';
-      document.getElementById('feedback').className = 'feedback';
-      document.getElementById('next-button').style.visibility = 'hidden';
-      document.getElementById('insert-coin').style.display = 'none';
+      (document.getElementById('feedback') as HTMLElement).textContent = '';
+      (document.getElementById('feedback') as HTMLElement).className = 'feedback';
+      (document.getElementById('next-button') as HTMLElement).style.visibility = 'hidden';
+      (document.getElementById('insert-coin') as HTMLElement).style.display = 'none';
 
       currentCorrectAnswer = airlines[Math.floor(Math.random() * airlines.length)];
-      window.__currentCorrectAnswer = currentCorrectAnswer;
-      document.getElementById('iata-code').textContent = currentCorrectAnswer.iataCode;
+      (window as any).__currentCorrectAnswer = currentCorrectAnswer;
+      (document.getElementById('iata-code') as HTMLElement).textContent = currentCorrectAnswer!.iataCode;
 
-      const incorrectOptions = getRandomAirlines(3, currentCorrectAnswer);
-      const allOptions = shuffle([currentCorrectAnswer, ...incorrectOptions]);
+      const incorrectOptions = getRandomAirlines(airlines, 3, currentCorrectAnswer);
+      const allOptions = shuffle([currentCorrectAnswer!, ...incorrectOptions]);
 
-      const optionsContainer = document.getElementById('options-container');
+      const optionsContainer = document.getElementById('options-container') as HTMLElement;
       optionsContainer.innerHTML = '';
 
       allOptions.forEach(airline => {
@@ -555,66 +542,66 @@ try {
       });
     }
 
-    function handleAnswer(selectedAirline, button) {
+    function handleAnswer(selectedAirline: { id: string; name: string }, button: HTMLButtonElement) {
       if (answered) return;
 
       answered = true;
       totalCount++;
 
-      const buttons = document.querySelectorAll('.option-button');
+      const buttons = document.querySelectorAll<HTMLButtonElement>('.option-button');
       buttons.forEach(btn => btn.disabled = true);
 
-      const isCorrect = selectedAirline.id === currentCorrectAnswer.id;
+      const isCorrect = selectedAirline.id === currentCorrectAnswer!.id;
 
       if (isCorrect) {
         correctCount++;
         streak++;
         button.classList.add('correct');
-        const streakText = streak > 1 ? ` ${streak}x COMBO!` : '';
-        document.getElementById('feedback').textContent = `CORRECT!${streakText}`;
-        document.getElementById('feedback').className = 'feedback correct';
       } else {
         streak = 0;
         button.classList.add('incorrect');
         buttons.forEach(btn => {
-          if (btn.dataset.airlineId === currentCorrectAnswer.id) {
+          if (btn.dataset.airlineId === currentCorrectAnswer!.id) {
             btn.classList.add('correct');
           }
         });
-        document.getElementById('feedback').textContent = `WRONG! IT WAS ${currentCorrectAnswer.name.toUpperCase()}`;
-        document.getElementById('feedback').className = 'feedback incorrect';
       }
 
+      const feedbackEl = document.getElementById('feedback') as HTMLElement;
+      feedbackEl.textContent = buildFeedbackText(isCorrect, streak, currentCorrectAnswer!.name);
+      feedbackEl.className = `feedback ${isCorrect ? 'correct' : 'incorrect'}`;
+
       // Update score and hi-score
-      document.getElementById('correct-count').textContent = correctCount;
-      document.getElementById('total-count').textContent = totalCount;
+      (document.getElementById('correct-count') as HTMLElement).textContent = String(correctCount);
+      (document.getElementById('total-count') as HTMLElement).textContent = String(totalCount);
 
       if (correctCount > hiScore) {
         hiScore = correctCount;
         localStorage.setItem('airline-hi-score', hiScore.toString());
-        document.getElementById('hi-score').textContent = hiScore;
+        (document.getElementById('hi-score') as HTMLElement).textContent = String(hiScore);
       }
 
-      document.getElementById('next-button').style.visibility = 'visible';
+      (document.getElementById('next-button') as HTMLElement).style.visibility = 'visible';
     }
 
     // Theme toggle
-    const themeToggle = document.getElementById('theme-toggle');
-    const savedTheme = localStorage.getItem('airline-theme');
+    const themeToggle = document.getElementById('theme-toggle') as HTMLButtonElement;
+    const savedTheme = getStoredTheme(localStorage);
     if (savedTheme === 'light') {
       document.body.classList.add('light-mode');
-      themeToggle.textContent = '🌙';
+      themeToggle.textContent = getThemeToggleIcon('light');
     }
 
     themeToggle.addEventListener('click', () => {
       document.body.classList.toggle('light-mode');
       const isLight = document.body.classList.contains('light-mode');
-      themeToggle.textContent = isLight ? '🌙' : '☀️';
-      localStorage.setItem('airline-theme', isLight ? 'light' : 'dark');
+      const newTheme = isLight ? 'light' : 'dark';
+      themeToggle.textContent = getThemeToggleIcon(newTheme);
+      localStorage.setItem('airline-theme', newTheme);
     });
 
     // Initialize game
-    document.getElementById('next-button').onclick = loadQuestion;
+    (document.getElementById('next-button') as HTMLElement).onclick = loadQuestion;
     loadQuestion();
   </script>
 </body>

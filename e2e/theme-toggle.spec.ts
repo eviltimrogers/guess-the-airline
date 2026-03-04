@@ -56,10 +56,9 @@ test.describe('Theme Toggle', () => {
   test('applies correct background color in light mode', async ({ page }) => {
     await page.locator('#theme-toggle').click();
 
-    // Intentionally wrong: expects dark mode background color while in light mode
     const bgColor = await page.locator('body').evaluate(
       (el) => getComputedStyle(el).backgroundColor
     );
-    expect(bgColor).toBe('rgb(10, 10, 46)');
+    expect(bgColor).toBe('rgb(232, 232, 240)');
   });
 });
