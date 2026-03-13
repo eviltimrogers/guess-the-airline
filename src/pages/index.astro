@@ -367,6 +367,12 @@ try {
     let answered = false;
     let hiScore = parseInt(localStorage.getItem('airline-hi-score') || '0', 10);
     let streak = 0;
+    const inspirationalMessages = [
+      'YOU ARE FLYING HIGH!',
+      'SKY-HIGH GUESSING!',
+      'KEEP REACHING FOR THE STARS!',
+      'YOU HAVE PILOT-LEVEL INSTINCTS!'
+    ];
 
     document.getElementById('hi-score').textContent = hiScore;
 
@@ -431,8 +437,9 @@ try {
         correctCount++;
         streak++;
         button.classList.add('correct');
+        const inspirationalMessage = inspirationalMessages[Math.floor(Math.random() * inspirationalMessages.length)];
         const streakText = streak > 1 ? ` ${streak}x COMBO!` : '';
-        document.getElementById('feedback').textContent = `CORRECT!${streakText}`;
+        document.getElementById('feedback').textContent = `CORRECT! ${inspirationalMessage}${streakText}`;
         document.getElementById('feedback').className = 'feedback correct';
       } else {
         streak = 0;

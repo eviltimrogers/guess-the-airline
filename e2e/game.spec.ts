@@ -1,5 +1,12 @@
 import { test, expect, type Page } from '@playwright/test';
 
+const inspirationalMessages = [
+  'YOU ARE FLYING HIGH!',
+  'SKY-HIGH GUESSING!',
+  'KEEP REACHING FOR THE STARS!',
+  'YOU HAVE PILOT-LEVEL INSTINCTS!',
+];
+
 /** Wait for the game to be fully loaded and return the correct answer's ID. */
 async function getCorrectAnswerId(page: Page): Promise<string> {
   await page.waitForFunction(() => (window as any).__currentCorrectAnswer?.id);
@@ -32,7 +39,8 @@ test.describe('Guess the Airline', () => {
 
     await page.locator(`.option-button[data-airline-id="${correctId}"]`).click();
 
-    await expect(page.locator('#feedback')).toHaveText('CORRECT!');
+    await expect(page.locator('#feedback')).toContainText('CORRECT!');
+    await expect(page.locator('#feedback')).toContainText(new RegExp(inspirationalMessages.join('|')));
     await expect(page.locator('#feedback')).toHaveClass(/correct/);
     await expect(page.locator('.score')).toContainText('SCORE: 1 / 1');
     await expect(page.locator('#next-button')).toBeVisible();
@@ -87,6 +95,17 @@ test.describe('Guess the Airline', () => {
     }
   });
 
+  test('shows an inspirational message on every correct answer', async ({ page }) => {
+    for (let round = 1; round <= 2; round++) {
+      const correctId = await getCorrectAnswerId(page);
+      await page.locator(`.option-button[data-airline-id="${correctId}"]`).click();
+      await expect(page.locator('#feedback')).toContainText(new RegExp(inspirationalMessages.join('|')));
+      if (round < 2) {
+        await page.locator('#next-button').click();
+      }
+    }
+  });
+
   test('resets streak after wrong answer', async ({ page }) => {
     // First: answer correctly
     let correctId = await getCorrectAnswerId(page);
@@ -101,7 +120,7 @@ test.describe('Guess the Airline', () => {
     // Third: answer correctly — should NOT show combo (streak was reset)
     correctId = await getCorrectAnswerId(page);
     await page.locator(`.option-button[data-airline-id="${correctId}"]`).click();
-    await expect(page.locator('#feedback')).toHaveText('CORRECT!');
+    await expect(page.locator('#feedback')).toContainText('CORRECT!');
   });
 
   test('updates hi-score when current score exceeds it', async ({ page }) => {
