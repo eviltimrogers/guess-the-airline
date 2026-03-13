@@ -1,9 +1,15 @@
 import { test, expect, type Page } from '@playwright/test';
 
+declare global {
+  interface Window {
+    __currentCorrectAnswer?: { id: string };
+  }
+}
+
 /** Wait for the game to be fully loaded and return the correct answer's ID. */
 async function getCorrectAnswerId(page: Page): Promise<string> {
-  await page.waitForFunction(() => (window as any).__currentCorrectAnswer?.id);
-  return page.evaluate(() => (window as any).__currentCorrectAnswer.id);
+  await page.waitForFunction(() => window.__currentCorrectAnswer?.id);
+  return page.evaluate(() => window.__currentCorrectAnswer!.id);
 }
 
 test.describe('Guess the Airline', () => {
